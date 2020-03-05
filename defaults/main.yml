@@ -1,0 +1,3 @@
+---
+# defaults file for gensslcert
+#cert_common_name: {{ ansible_hostname }}

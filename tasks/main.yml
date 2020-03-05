@@ -1,0 +1,52 @@
+---
+# tasks file for gensslcert
+- name: Create temp directory to house the SSL files
+  file:
+    path: /var/tmp/ssl/private
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{  ansible_user }}"
+ # loop:
+ #   - {{ cert_dir: private }}
+ #   - {{ cert_dir: certificate }}
+
+- name: Create temp directory to house the SSL files
+  file:
+    path: /var/tmp/ssl/certificate
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{  ansible_user }}"
+
+- name: Generate an OpenSSL private key with a size 2048 bits
+  openssl_privatekey:
+    path: /var/tmp/ssl/private/{{ ansible_fqdn }}.pem
+    size: 2048
+
+- name: Generate an OpenSSL Certificate Signing Request
+  openssl_csr:
+    path: /var/tmp/ssl/certificate/{{ ansible_fqdn }}.csr
+    privatekey_path: /var/tmp/ssl/private/{{ ansible_fqdn }}.pem
+    country_name: IN
+    organization_name: IND_PVT_LTD
+    email_address: pat2711@exptmp.com
+#    common_name:
+#    common_name: {{ ansible_hostname }}
+
+- name: Generate a Self Signed OpenSSL certificate
+  become: true
+  openssl_certificate:
+    path: /var/tmp/ssl/certificate/{{ ansible_fqdn }}.crt
+    privatekey_path: /var/tmp/ssl/private/{{ ansible_fqdn }}.pem
+    csr_path: /var/tmp/ssl/certificate/{{ ansible_fqdn }}.csr
+    provider: selfsigned
+    not_before: 20190331202428Z
+    not_after: 20190413202428Z
+    signature_algorithms:
+      - sha224WithRSAEncryption
+      - sha256WithRSAEncryption
+      - sha384WithRSAEncryption
+      - sha512WithRSAEncryption
+      - sha224WithECDSAEncryption
+      - sha256WithECDSAEncryption
+      - sha384WithECDSAEncryption
+      - sha512WithECDSAEncryption
